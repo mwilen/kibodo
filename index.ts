@@ -169,21 +169,38 @@ class ShortcutManager {
           if(Array.isArray(shortcut.key)){
             const modifiers = shortcut.key.join().match(/(shift|meta|ctrl|alt)/g);
             const keys = shortcut.key
-              .map(key => this.keyWithoutModifiers(key))
-            if(modifiers.every((key) => this.currentModifier.includes(key)) && keys.every((key) => this.currentSequence.includes(key))){
-              console.log('yay')
-              for(const listener of this.listeners) {
-                listener.callback();
+              .map(key => this.keyWithoutModifiers(key));
+
+            if(this.modifiersIsMatching(modifiers) && this.sequenceIsMatching(keys)){
+              console.log('yay');
+              this.currentSequence = [];
+              for(const listener of this.listeners){
+                if(listener.command === shortcut.command){
+                  listener.callback();
+                }
               }
             }
           }
           else if(this.currentSequence.includes(shortcut.key)){
             console.log('yay')
+            for(const listener of this.listeners){
+              if(listener.command === shortcut.command){
+                listener.callback();
+              }
+            }
           }
       }
     }
 
-    keyWithoutModifiers(key: string): string {
+    private modifiersIsMatching(modifiers: RegExpMatchArray): boolean {
+      return modifiers.every((key) => this.currentModifier.includes(key))
+    }
+
+    private sequenceIsMatching(keys: string[]): boolean {
+      return keys.every((key) => this.currentSequence.includes(key))
+    }
+
+    private keyWithoutModifiers(key: string): string {
       const re = new RegExp('(' + this.currentModifier.join('\\+|') + '\\+)', 'g');
       return key.replace(re, '');
     }
@@ -239,4 +256,10 @@ shortcutManager.add(
 
 shortcutManager.listen('asd', () => {
   console.log('hello')
+})
+
+
+
+shortcutManager.listen('hert', () => {
+  console.log('nnnnn')
 })
